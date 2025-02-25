@@ -1,0 +1,50 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id       Int      @id @default(autoincrement())
+  nombre   String
+  correo   String   @unique
+  password String
+  rol      String?
+  grupos   Grupo[]
+}
+
+model Grupo {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  idUsuario Int
+  usuario   Usuario  @relation(fields: [idUsuario], references: [id])
+  alumnos   GrupoAlumno[]
+}
+
+model Alumno {
+  id          Int           @id @default(autoincrement())
+  nombre      String
+  apellido    String
+  correo      String?
+  grupoAlumno GrupoAlumno[]
+  asistencias Asistencia[]
+}
+
+model GrupoAlumno {
+  id       Int     @id @default(autoincrement())
+  idGrupo  Int
+  idAlumno Int
+  grupo    Grupo   @relation(fields: [idGrupo], references: [id])
+  alumno   Alumno  @relation(fields: [idAlumno], references: [id])
+}
+
+model Asistencia {
+  id       Int     @id @default(autoincrement())
+  idAlumno Int
+  fecha    DateTime
+  estado   String
+  alumno   Alumno  @relation(fields: [idAlumno], references: [id])
+}
