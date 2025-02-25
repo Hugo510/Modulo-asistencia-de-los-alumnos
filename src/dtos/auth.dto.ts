@@ -1,7 +1,6 @@
 // src/dtos/auth.dto.ts
 import { z } from "zod";
 
-// Definición del esquema para el login
 export const LoginDtoSchema = z.object({
   correo: z.string().email({ message: "El correo debe ser un email válido" }),
   password: z
@@ -9,5 +8,21 @@ export const LoginDtoSchema = z.object({
     .min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
 });
 
-// Tipo inferido del DTO a partir del esquema
 export type LoginDto = z.infer<typeof LoginDtoSchema>;
+
+export const PasswordRecoveryDtoSchema = z.object({
+  correo: z.string().email({ message: "El correo debe ser un email válido" }),
+});
+
+export type PasswordRecoveryDto = z.infer<typeof PasswordRecoveryDtoSchema>;
+
+export const ResetPasswordDtoSchema = z.object({
+  token: z.string().nonempty({ message: "El token es requerido" }),
+  newPassword: z
+    .string()
+    .min(6, {
+      message: "La nueva contraseña debe tener al menos 6 caracteres",
+    }),
+});
+
+export type ResetPasswordDto = z.infer<typeof ResetPasswordDtoSchema>;
