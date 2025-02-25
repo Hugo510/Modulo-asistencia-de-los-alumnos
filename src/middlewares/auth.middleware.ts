@@ -11,19 +11,19 @@ export const authenticate = (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-): void | Response => {
+): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res
-      .status(401)
-      .json({ error: "No se encontró el token de autenticación" });
+    res.status(401).json({ error: "No se encontró el token de autenticación" });
+    return;
   }
 
   // Se asume que el token viene en el formato "Bearer <token>"
   const token = authHeader.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ error: "Token no proporcionado" });
+    res.status(401).json({ error: "Token no proporcionado" });
+    return;
   }
 
   try {
@@ -31,6 +31,7 @@ export const authenticate = (
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ error: "Token inválido o expirado" });
+    res.status(401).json({ error: "Token inválido o expirado" });
+    return;
   }
 };
