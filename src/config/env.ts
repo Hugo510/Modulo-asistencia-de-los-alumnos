@@ -11,6 +11,9 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().min(1, { message: "DATABASE_URL es requerida" }),
   JWT_SECRET: z.string().min(1, { message: "JWT_SECRET es requerida" }),
+  RECAPTCHA_SECRET_KEY: z
+    .string()
+    .min(1, { message: "RECAPTCHA_SECRET_KEY es requerida" }),
   EMAIL_HOST: z.string().min(1, { message: "EMAIL_HOST es requerida" }),
   EMAIL_PORT: z.coerce.number().default(587),
   EMAIL_USER: z.string().min(1, { message: "EMAIL_USER es requerida" }),

@@ -7,6 +7,7 @@ import {
   PasswordRecoveryDtoSchema,
   ResetPasswordDtoSchema,
 } from "../dtos/auth.dto";
+import { verifyCaptcha } from "../middlewares/captcha.middleware";
 
 const router = Router();
 const authController = new AuthController();
@@ -26,29 +27,39 @@ const authController = new AuthController();
  *     tags: [Auth]
  *     requestBody:
  *       required: true
- *       description: Datos para autenticación.
+ *       description: Datos para autenticación, incluyendo el token CAPTCHA.
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/LoginDto'
+ *             type: object
+ *             properties:
+ *               correo:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *               captchaToken:
+ *                 type: string
+ *             required:
+ *               - correo
+ *               - password
+ *               - captchaToken
  *     responses:
  *       200:
  *         description: Inicio de sesión exitoso. Retorna el token de autenticación.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
  *       400:
- *         description: Datos inválidos.
+ *         description: Datos inválidos o token CAPTCHA no válido.
  *       401:
  *         description: Credenciales incorrectas.
  */
-router.post("/login", validate(LoginDtoSchema), (req, res, next) => {
-  authController.login(req, res, next);
-});
+router.post(
+  "/login",
+  validate(LoginDtoSchema),
+  verifyCaptcha,
+  (req, res, next) => {
+    authController.login(req, res, next);
+  }
+);
 
 /**
  * @swagger
