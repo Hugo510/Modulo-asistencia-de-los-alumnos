@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
 
+// Esquema para solicitar restablecimiento (ingresar correo)
 const requestResetSchema = z.object({
   email: z.string().email("Correo electrónico inválido"),
 });
 
+// Esquema para reiniciar contraseña (ingresar nueva contraseña y confirmación)
 const resetPasswordSchema = z
   .object({
     password: z
@@ -28,24 +30,31 @@ type RequestResetForm = z.infer<typeof requestResetSchema>;
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
 export function ResetPasswordPage() {
+  // Extrae el token de la URL (por ejemplo, ?token=...)
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
-  const { resetPassword, verifyResetToken, updatePassword } = useAuth();
 
+  // De nuestro hook useAuth usamos resetPassword y updatePassword
+  const { resetPassword, updatePassword } = useAuth();
+
+  // Form para solicitar restablecimiento (ingresar correo)
   const { register: registerRequest, handleSubmit: handleSubmitRequest } =
     useForm<RequestResetForm>({
       resolver: zodResolver(requestResetSchema),
     });
 
+  // Form para reiniciar contraseña (ingresar nueva contraseña y confirmación)
   const { register: registerReset, handleSubmit: handleSubmitReset } =
     useForm<ResetPasswordForm>({
       resolver: zodResolver(resetPasswordSchema),
     });
 
+  // Función que se llama al solicitar restablecimiento de contraseña (envía el correo)
   const onRequestReset = async (data: RequestResetForm) => {
     setIsLoading(true);
     setError("");
@@ -53,10 +62,10 @@ export function ResetPasswordPage() {
       const success = await resetPassword(data.email);
       if (success) {
         setSuccess(
-          "Las instrucciones para restablecer la contraseña han sido enviadas a tu correo electrónico"
+          "Las instrucciones para restablecer la contraseña han sido enviadas a tu correo electrónico."
         );
       } else {
-        setError("No se pudo procesar tu solicitud");
+        setError("No se pudo procesar tu solicitud.");
       }
     } catch (error) {
       setError("Ocurrió un error. Por favor, inténtalo de nuevo.");
@@ -65,24 +74,20 @@ export function ResetPasswordPage() {
     }
   };
 
+  // Función que se llama al enviar el formulario de reinicio de contraseña
   const onResetPassword = async (data: ResetPasswordForm) => {
     if (!token) return;
 
     setIsLoading(true);
     setError("");
     try {
-      const isValid = await verifyResetToken(token);
-      if (!isValid) {
-        setError("Token de restablecimiento inválido o expirado");
-        return;
-      }
-
+      // Llama directamente a updatePassword sin verificar el token previamente.
       const success = await updatePassword(token, data.password);
       if (success) {
-        setSuccess("La contraseña ha sido restablecida exitosamente");
+        setSuccess("La contraseña ha sido restablecida exitosamente.");
         setTimeout(() => navigate("/"), 2000);
       } else {
-        setError("No se pudo restablecer la contraseña");
+        setError("No se pudo restablecer la contraseña.");
       }
     } catch (error) {
       setError("Ocurrió un error. Por favor, inténtalo de nuevo.");
@@ -217,3 +222,16 @@ export function ResetPasswordPage() {
     </div>
   );
 }
+
+
+/* 
+  Explicación
+    Extracción del Token:
+      Se utiliza useSearchParams para extraer el parámetro token de la URL. Si existe, se muestra el formulario para reiniciar la contraseña; de lo contrario, se muestra el formulario para solicitar el restablecimiento.
+
+    Formulario para Reinicio de Contraseña:
+      Al enviar el formulario, se llama a onResetPassword, que ahora omite la validación del token (ya que no se implementa verifyResetToken) y procede directamente a llamar a updatePassword con el token y la nueva contraseña.
+
+    Interfaz de Usuario:
+      Los mensajes de error, éxito y la animación de carga se manejan con estados locales para ofrecer retroalimentación al usuario.
+*/
