@@ -6,11 +6,12 @@ import { env } from "./env"; // Importamos las variables de entorno
 
 const swaggerOptions = {
   definition: {
-    openapi: '3.0.0',
+    openapi: "3.0.0",
     info: {
-      title: 'API de Gestión de Asistencia',
-      version: '1.0.0',
-      description: 'Documentación de la API para el sistema de asistencia escolar',
+      title: "API de Gestión de Asistencia",
+      version: "1.0.0",
+      description:
+        "Documentación de la API para el sistema de asistencia escolar",
     },
     servers: [
       {
@@ -19,63 +20,116 @@ const swaggerOptions = {
     ],
     components: {
       schemas: {
+        // Auth DTOs
         LoginDto: {
-          type: 'object',
+          type: "object",
           properties: {
-            correo: { type: 'string', format: 'email' },
-            password: { type: 'string', minLength: 6 },
+            correo: { type: "string", format: "email" },
+            password: { type: "string", minLength: 6 },
           },
-          required: ['correo', 'password'],
+          required: ["correo", "password"],
         },
+        PasswordRecoveryDto: {
+          type: "object",
+          properties: {
+            correo: { type: "string", format: "email" },
+          },
+          required: ["correo"],
+        },
+        ResetPasswordDto: {
+          type: "object",
+          properties: {
+            token: { type: "string" },
+            newPassword: { type: "string", minLength: 6 },
+          },
+          required: ["token", "newPassword"],
+        },
+        // User DTOs
         CreateUserDto: {
-          type: 'object',
+          type: "object",
           properties: {
-            nombre: { type: 'string' },
-            correo: { type: 'string', format: 'email' },
-            password: { type: 'string', minLength: 6 },
-            rol: { type: 'string', enum: ['profesor', 'administrador'] },
+            nombre: { type: "string" },
+            correo: { type: "string", format: "email" },
+            password: { type: "string", minLength: 6 },
+            rol: { type: "string", enum: ["profesor", "administrador"] },
           },
-          required: ['nombre', 'correo', 'password'],
+          required: ["nombre", "correo", "password"],
         },
-        UpdateUserDto: { /* Definir según sea necesario */ },
+        UpdateUserDto: {
+          type: "object",
+          properties: {
+            nombre: { type: "string" },
+            correo: { type: "string", format: "email" },
+            password: { type: "string", minLength: 6 },
+            rol: { type: "string", enum: ["profesor", "administrador"] },
+          },
+        },
+        // Group DTOs
         CreateGroupDto: {
-          type: 'object',
+          type: "object",
           properties: {
-            nombre: { type: 'string' },
+            nombre: { type: "string" },
           },
-          required: ['nombre'],
+          required: ["nombre"],
         },
-        UpdateGroupDto: { /* Definir según sea necesario */ },
+        UpdateGroupDto: {
+          type: "object",
+          properties: {
+            nombre: { type: "string" },
+          },
+        },
+        // Student DTOs
         CreateStudentDto: {
-          type: 'object',
+          type: "object",
           properties: {
-            nombre: { type: 'string' },
-            apellido: { type: 'string' },
-            correo: { type: 'string', format: 'email' },
+            nombre: { type: "string" },
+            apellido: { type: "string" },
+            correo: { type: "string", format: "email" },
           },
-          required: ['nombre', 'apellido'],
+          required: ["nombre", "apellido"],
         },
-        UpdateStudentDto: { /* Definir según sea necesario */ },
-        CreateAttendanceDto: {
-          type: 'object',
+        UpdateStudentDto: {
+          type: "object",
           properties: {
-            idAlumno: { type: 'number' },
-            fecha: { type: 'string', format: 'date-time' },
-            estado: { type: 'string', enum: ['presente', 'ausente', 'tardanza'] },
+            nombre: { type: "string" },
+            apellido: { type: "string" },
+            correo: { type: "string", format: "email" },
           },
-          required: ['idAlumno', 'fecha', 'estado'],
+        },
+        // Attendance DTOs
+        CreateAttendanceDto: {
+          type: "object",
+          properties: {
+            idAlumno: { type: "number" },
+            fecha: { type: "string", format: "date-time" },
+            estado: {
+              type: "string",
+              enum: ["presente", "ausente", "tardanza"],
+            },
+          },
+          required: ["idAlumno", "fecha", "estado"],
+        },
+        UpdateAttendanceDto: {
+          type: "object",
+          properties: {
+            fecha: { type: "string", format: "date-time" },
+            estado: {
+              type: "string",
+              enum: ["presente", "ausente", "tardanza"],
+            },
+          },
         },
       },
       securitySchemes: {
         bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT',
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
         },
       },
     },
   },
-  apis: ['./src/routes/*.ts'],
+  apis: ["./src/routes/*.ts"],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);

@@ -16,3 +16,21 @@ export const CreateAttendanceDtoSchema = z.object({
 });
 
 export type CreateAttendanceDto = z.infer<typeof CreateAttendanceDtoSchema>;
+
+export const UpdateAttendanceDtoSchema = z.object({
+  // Permite actualizar la fecha y/o el estado; ambos son opcionales.
+  fecha: z
+    .preprocess((arg) => {
+      if (typeof arg === "string" || arg instanceof Date) return new Date(arg);
+    }, z.date().optional())
+    .optional(),
+  estado: z
+    .enum(["presente", "ausente", "tardanza"], {
+      errorMap: () => ({
+        message: "El estado debe ser 'presente', 'ausente' o 'tardanza'",
+      }),
+    })
+    .optional(),
+});
+
+export type UpdateAttendanceDto = z.infer<typeof UpdateAttendanceDtoSchema>;
