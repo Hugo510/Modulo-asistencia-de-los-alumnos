@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,10 +16,9 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, loading, error, clearError } = useAuth();
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const {
     register,
@@ -28,29 +27,45 @@ export function LoginPage() {
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "teacher@example.com", //Chingadera pre llenada
-      password: "password123", //Chingadera pre llenada tambien xd
+      email: "teacher@example.com",
+      password: "password123",
     },
   });
 
+  // Efecto para sincronizar errores del store con el estado local
+  useEffect(() => {
+    if (error.login) {
+      setLocalError(error.login);
+    } else {
+      setLocalError(null);
+    }
+  }, [error.login]);
+
+  // Limpiar errores al montar o desmontar el componente
+  useEffect(() => {
+    clearError("login");
+    return () => clearError("login");
+  }, [clearError]);
+
   const onSubmit = async (data: LoginForm) => {
-    setIsLoading(true);
-    setError("");
+    setLocalError(null);
+
     try {
+      // Intentar iniciar sesión
       const success = await login({
         email: data.email,
         password: data.password,
-        captchaToken: "Pinche-Token-De-prueba",
+        captchaToken: "test-captcha",
       });
+
+      // Redirigir si el login fue exitoso
       if (success) {
         navigate("/dashboard/groups");
-      } else {
-        setError("Correo electrónico o contraseña inválidos");
       }
-    } catch (error) {
-      setError("Ocurrió un error. Por favor, inténtalo de nuevo.");
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      // Manejar errores inesperados aquí
+      console.error("Error inesperado:", err);
+      setLocalError(err instanceof Error ? err.message : "Error inesperado al iniciar sesión");
     }
   };
 
@@ -63,9 +78,11 @@ export function LoginPage() {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Inicia sesión en tu cuenta
         </h2>
-        {error && (
+
+        {/* Mostrar errores usando el estado local que se sincroniza con el store */}
+        {localError && (
           <div className="mt-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-center">
-            {error}
+            {localError}
           </div>
         )}
       </div>
@@ -145,15 +162,19 @@ export function LoginPage() {
                 <a
                   href="#"
                   className="font-medium text-blue-600 hover:text-blue-500"
-                  onClick={() => navigate("/reset-password")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/reset-password");
+                  }}
                 >
                   ¿Olvidaste tu contraseña?
                 </a>
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+            {/* Usar el estado loading.login del store */}
+            <Button type="submit" className="w-full" disabled={loading.login}>
+              {loading.login ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
           </form>
         </div>

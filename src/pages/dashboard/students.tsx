@@ -1,41 +1,34 @@
-import { useState } from "react";
-import { Plus, Search, Mail, MoreVertical, UserPlus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Mail, MoreVertical, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useStore } from "@/lib/store";
-import type { Student } from "@/lib/types";
+import { useStudentsStore } from "@/lib/storeStudents";
 
 export function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [newStudent, setNewStudent] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    studentId: "",
-    groupId: "",
+    nombre: "",
+    apellido: "",
+    correo: ""
   });
 
-  const { students, groups, addStudent } = useStore();
+  const { students, fetchStudents, addStudent } = useStudentsStore();
+
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
 
   const filteredStudents = students.filter(
     (student) =>
-      `${student.firstName} ${student.lastName}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      student.studentId.toLowerCase().includes(searchTerm.toLowerCase())
+      `${student.nombre} ${student.apellido}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.correo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddStudent = (e: React.FormEvent) => {
+  const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    addStudent(newStudent, newStudent.groupId);
-    setNewStudent({
-      firstName: "",
-      lastName: "",
-      email: "",
-      studentId: "",
-      groupId: "",
-    });
+    await addStudent(newStudent);
+    setNewStudent({ nombre: "", apellido: "", correo: "" });
     setShowAddForm(false);
   };
 
@@ -61,93 +54,38 @@ export function StudentsPage() {
           <h2 className="text-lg font-medium mb-4">Agregar Nuevo Estudiante</h2>
           <form onSubmit={handleAddStudent} className="space-y-4">
             <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
                 Nombre
               </label>
               <Input
-                id="firstName"
-                value={newStudent.firstName}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, firstName: e.target.value })
-                }
+                id="nombre"
+                value={newStudent.nombre}
+                onChange={(e) => setNewStudent({ ...newStudent, nombre: e.target.value })}
                 required
               />
             </div>
             <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="apellido" className="block text-sm font-medium text-gray-700">
                 Apellido
               </label>
               <Input
-                id="lastName"
-                value={newStudent.lastName}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, lastName: e.target.value })
-                }
+                id="apellido"
+                value={newStudent.apellido}
+                onChange={(e) => setNewStudent({ ...newStudent, apellido: e.target.value })}
                 required
               />
             </div>
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="correo" className="block text-sm font-medium text-gray-700">
                 Correo Electrónico
               </label>
               <Input
-                id="email"
+                id="correo"
                 type="email"
-                value={newStudent.email}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, email: e.target.value })
-                }
+                value={newStudent.correo}
+                onChange={(e) => setNewStudent({ ...newStudent, correo: e.target.value })}
                 required
               />
-            </div>
-            <div>
-              <label
-                htmlFor="studentId"
-                className="block text-sm font-medium text-gray-700"
-              >
-                ID del Estudiante
-              </label>
-              <Input
-                id="studentId"
-                value={newStudent.studentId}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, studentId: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="groupId"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Grupo
-              </label>
-              <select
-                id="groupId"
-                value={newStudent.groupId}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, groupId: e.target.value })
-                }
-                required
-                className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
-              >
-                <option value="">Selecciona un grupo</option>
-                {groups.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.name}
-                  </option>
-                ))}
-              </select>
             </div>
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setShowAddForm(false)}>
@@ -174,45 +112,40 @@ export function StudentsPage() {
         </div>
 
         <div className="overflow-hidden bg-white shadow sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
-            {filteredStudents.map((student) => (
-              <li key={student.id}>
-                <div className="flex items-center px-4 py-4 sm:px-6">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-blue-600">
-                        {student.firstName} {student.lastName}
-                      </p>
-                      <div className="ml-2 flex flex-shrink-0">
-                        <p className="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800">
-                          {student.studentId}
+          {filteredStudents.length > 0 ? (
+            <ul className="divide-y divide-gray-200">
+              {filteredStudents.map((student) => (
+                <li key={student.id}>
+                  <div className="flex items-center px-4 py-4 sm:px-6">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-blue-600">
+                          {student.nombre} {student.apellido}
                         </p>
                       </div>
-                    </div>
-                    <div className="mt-2 flex">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Mail className="mr-1.5 h-4 w-4 flex-shrink-0" />
-                        <span>{student.email}</span>
+                      <div className="mt-2 flex">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Mail className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                          <span>{student.correo}</span>
+                        </div>
                       </div>
                     </div>
+                    <div className="ml-5 flex-shrink-0">
+                      <Button variant="ghost" size="sm">
+                        <MoreVertical className="h-5 w-5" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="ml-5 flex-shrink-0">
-                    <Button variant="ghost" size="sm">
-                      <MoreVertical className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="p-4 text-center text-gray-500">
+              Se cargaron los estudiantes correctamente, pero por el momento no hay ninguno.
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
-type StudentsPageProps = {
-  students: Student[];
-};
-
-export default StudentsPage;

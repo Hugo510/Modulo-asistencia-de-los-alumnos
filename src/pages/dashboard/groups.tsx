@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, MoreVertical, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,22 +8,24 @@ export function GroupsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
   const [newGroup, setNewGroup] = useState({
-    name: "",
-    course: "",
+    nombre: ""
   });
 
-  const { groups, addGroup, getGroupStudents } = useStore();
+  const { groups, addGroup, getGroupStudents, fetchGroups } = useStore();
+
+  useEffect(() => {
+    fetchGroups();
+  }, [fetchGroups]);
 
   const filteredGroups = groups.filter(
     (group) =>
-      group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      group.course.toLowerCase().includes(searchTerm.toLowerCase())
+      group.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddGroup = (e: React.FormEvent) => {
+  const handleAddGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    addGroup(newGroup);
-    setNewGroup({ name: "", course: "" });
+    await addGroup(newGroup);
+    setNewGroup({ nombre: "" });
     setShowAddForm(false);
   };
 
@@ -50,32 +52,16 @@ export function GroupsPage() {
           <form onSubmit={handleAddGroup} className="space-y-4">
             <div>
               <label
-                htmlFor="name"
+                htmlFor="nombre"
                 className="block text-sm font-medium text-gray-700"
               >
                 Nombre del Grupo
               </label>
               <Input
-                id="name"
-                value={newGroup.name}
+                id="nombre"
+                value={newGroup.nombre}
                 onChange={(e) =>
-                  setNewGroup({ ...newGroup, name: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="course"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Curso
-              </label>
-              <Input
-                id="course"
-                value={newGroup.course}
-                onChange={(e) =>
-                  setNewGroup({ ...newGroup, course: e.target.value })
+                  setNewGroup({ ...newGroup, nombre: e.target.value })
                 }
                 required
               />
@@ -105,40 +91,41 @@ export function GroupsPage() {
         </div>
 
         <div className="overflow-hidden bg-white shadow sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
-            {filteredGroups.map((group) => {
-              const students = getGroupStudents(group.id);
-              return (
-                <li key={group.id}>
-                  <div className="flex items-center px-4 py-4 sm:px-6">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <p className="truncate text-sm font-medium text-blue-600">
-                          {group.name}
-                        </p>
-                        <div className="ml-2 flex flex-shrink-0">
-                          <p className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
-                            {group.course}
+          {filteredGroups.length > 0 ? (
+            <ul className="divide-y divide-gray-200">
+              {filteredGroups.map((group) => {
+                const students = getGroupStudents(group.id);
+                return (
+                  <li key={group.id}>
+                    <div className="flex items-center px-4 py-4 sm:px-6">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="truncate text-sm font-medium text-blue-600">
+                            {group.nombre}
                           </p>
                         </div>
-                      </div>
-                      <div className="mt-2 flex">
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Users className="mr-1.5 h-4 w-4 flex-shrink-0" />
-                          <span>{students.length} estudiantes</span>
+                        <div className="mt-2 flex">
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Users className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                            <span>{students.length} estudiantes</span>
+                          </div>
                         </div>
                       </div>
+                      <div className="ml-5 flex-shrink-0">
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-5 w-5" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="ml-5 flex-shrink-0">
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="h-5 w-5" />
-                      </Button>
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="p-4 text-center text-gray-500">
+              Se cargaron los grupos correctamente, pero por el momento no hay ninguno.
+            </div>
+          )}
         </div>
       </div>
     </div>

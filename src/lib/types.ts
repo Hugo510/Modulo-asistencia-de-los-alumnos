@@ -9,28 +9,21 @@ export interface User {
 }
 
 export interface Student {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  studentId: string;
-  enrollmentDate: string;
-  active: boolean;
+  id: number;
+  nombre: string;
+  apellido: string;
+  correo: string;
 }
 
 export interface Group {
-  id: string;
-  name: string;
-  course: string;
-  teacherId: string;
-  academicPeriod: string;
-  createdAt: string;
-  active: boolean;
+  id: number;
+  nombre: string;
+  idUsuario: number;
 }
 
 export interface GroupStudent {
   id: string;
-  groupId: string;
+  groupId: number;
   studentId: string;
   enrolledAt: string;
   status: "active" | "inactive";
@@ -39,7 +32,7 @@ export interface GroupStudent {
 export interface AttendanceRecord {
   id: string;
   studentId: string;
-  groupId: string;
+  groupId: number;
   date: string;
   status: "present" | "absent" | "late";
   notes?: string;
