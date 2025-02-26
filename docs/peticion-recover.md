@@ -1,0 +1,3 @@
+{
+"correo": "usuario@ejemplo.com"
+}
