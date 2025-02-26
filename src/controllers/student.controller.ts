@@ -52,4 +52,18 @@ export class StudentController {
       next(error);
     }
   }
+
+  // Obtiene todos los alumnos
+  async getAllStudents(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const students = await studentService.getAllStudents();
+      res.status(200).json(students);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

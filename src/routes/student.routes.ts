@@ -1,9 +1,12 @@
 // src/routes/student.routes.ts
-import { Router } from 'express';
-import { StudentController } from '../controllers/student.controller';
-import { validate } from '../middlewares/validate.middleware';
-import { CreateStudentDtoSchema, UpdateStudentDtoSchema } from '../dtos/student.dto';
-import { authenticate } from '../middlewares/auth.middleware';
+import { Router } from "express";
+import { StudentController } from "../controllers/student.controller";
+import { validate } from "../middlewares/validate.middleware";
+import {
+  CreateStudentDtoSchema,
+  UpdateStudentDtoSchema,
+} from "../dtos/student.dto";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 const studentController = new StudentController();
@@ -14,6 +17,24 @@ const studentController = new StudentController();
  *   name: Students
  *   description: Endpoints para la gestión de alumnos
  */
+
+/**
+ * @swagger
+ * /api/students:
+ *   get:
+ *     summary: Obtiene la lista de todos los alumnos.
+ *     tags: [Students]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de alumnos.
+ *       401:
+ *         description: No autorizado.
+ */
+router.get("/", authenticate, (req, res, next) => {
+  studentController.getAllStudents(req, res, next);
+});
 
 /**
  * @swagger
@@ -45,9 +66,14 @@ const studentController = new StudentController();
  *       401:
  *         description: No autorizado.
  */
-router.post('/groups/:groupId/students', authenticate, validate(CreateStudentDtoSchema), (req, res, next) => {
-  studentController.createStudent(req, res, next);
-});
+router.post(
+  "/groups/:groupId/students",
+  authenticate,
+  validate(CreateStudentDtoSchema),
+  (req, res, next) => {
+    studentController.createStudent(req, res, next);
+  }
+);
 
 /**
  * @swagger
@@ -81,9 +107,14 @@ router.post('/groups/:groupId/students', authenticate, validate(CreateStudentDto
  *       404:
  *         description: Alumno no encontrado.
  */
-router.put('/:id', authenticate, validate(UpdateStudentDtoSchema), (req, res, next) => {
-  studentController.updateStudent(req, res, next);
-});
+router.put(
+  "/:id",
+  authenticate,
+  validate(UpdateStudentDtoSchema),
+  (req, res, next) => {
+    studentController.updateStudent(req, res, next);
+  }
+);
 
 /**
  * @swagger
@@ -108,7 +139,7 @@ router.put('/:id', authenticate, validate(UpdateStudentDtoSchema), (req, res, ne
  *       404:
  *         description: Alumno no encontrado.
  */
-router.get('/:id', authenticate, (req, res, next) => {
+router.get("/:id", authenticate, (req, res, next) => {
   studentController.getStudent(req, res, next);
 });
 

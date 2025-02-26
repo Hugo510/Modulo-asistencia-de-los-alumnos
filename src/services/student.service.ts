@@ -38,4 +38,10 @@ export class StudentService {
     }
     return student;
   }
+
+  // Obtiene todos los alumnos
+  async getAllStudents() {
+    const students = await prisma.alumno.findMany();
+    return students;
+  }
 }
