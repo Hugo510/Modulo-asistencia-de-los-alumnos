@@ -49,7 +49,7 @@ class EmailService {
     if (!this.transporter) {
       throw new Error("El transportador de email no está configurado");
     }
-    const resetUrl = `${env.FRONTEND_URL}/api/auth/reset?token=${token}`;
+    const resetUrl = `${env.FRONTEND_URL}reset-password?token=${token}`;
     const mailOptions = {
       from: env.EMAIL_FROM,
       to,
