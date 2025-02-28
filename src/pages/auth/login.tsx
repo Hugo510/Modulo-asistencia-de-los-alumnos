@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Lock, Mail } from "lucide-react";
+import ReCAPTCHA from "react-google-recaptcha";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
@@ -19,6 +20,7 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { login, loading, error, clearError } = useAuth();
   const [localError, setLocalError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const {
     register,
@@ -50,12 +52,17 @@ export function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     setLocalError(null);
 
+    if (!captchaToken) {
+      setLocalError("Por favor, completa el CAPTCHA");
+      return;
+    }
+
     try {
-      // Intentar iniciar sesión
+      // Intentar iniciar sesión pasando el token real obtenido del widget
       const success = await login({
         email: data.email,
         password: data.password,
-        captchaToken: "test-captcha",
+        captchaToken,
       });
 
       // Redirigir si el login fue exitoso
@@ -63,10 +70,16 @@ export function LoginPage() {
         navigate("/dashboard/groups");
       }
     } catch (err) {
-      // Manejar errores inesperados aquí
       console.error("Error inesperado:", err);
-      setLocalError(err instanceof Error ? err.message : "Error inesperado al iniciar sesión");
+      setLocalError(
+        err instanceof Error ? err.message : "Error inesperado al iniciar sesión"
+      );
     }
+  };
+
+  // Callback para manejar el cambio en el widget reCAPTCHA
+  const onCaptchaChange = (token: string | null) => {
+    setCaptchaToken(token);
   };
 
   return (
@@ -172,7 +185,14 @@ export function LoginPage() {
               </div>
             </div>
 
-            {/* Usar el estado loading.login del store */}
+            {/* Renderiza el widget reCAPTCHA */}
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"  // Clave de prueba
+                onChange={onCaptchaChange}
+              />
+            </div>
+
             <Button type="submit" className="w-full" disabled={loading.login}>
               {loading.login ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
