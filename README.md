@@ -124,6 +124,22 @@ Este repositorio contiene la aplicación completa del Sistema de Asistencia de A
    ```
    npx prisma generate
    ```
+4. Cargar datos de muestra:
+
+   ```bash
+   npm run seed
+   ```
+
+   Esto creará automáticamente:
+
+   - Usuario administrador (correo: admin@example.com, contraseña: password123)
+   - Usuario profesor (correo: profesor@example.com, contraseña: password123)
+   - Grupos de muestra
+   - Alumnos de muestra
+   - Registros de asistencia de ejemplo
+
+   > **Recomendación para pruebas**: Para probar correctamente el proyecto, se recomienda iniciar sesión con el usuario profesor (correo: profesor@example.com, contraseña: password123), ya que este cuenta con grupos y alumnos preconfigurados listos para gestionar asistencias.
+
 
 #### Opción 2: Uso de SQL directo
 
