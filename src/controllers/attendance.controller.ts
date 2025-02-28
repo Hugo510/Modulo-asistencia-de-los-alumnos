@@ -39,6 +39,20 @@ export class AttendanceController {
     }
   }
 
+  // Obtiene todos los registros de asistencia
+  async getAllAttendances(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const attendances = await attendanceService.getAllAttendances();
+      res.status(200).json(attendances);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // Actualiza un registro de asistencia por ID
   async updateAttendance(
     req: Request,

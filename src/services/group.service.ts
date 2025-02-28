@@ -27,7 +27,19 @@ export class GroupService {
   async getGroupsByUser(userId: number) {
     const groups = await prisma.grupo.findMany({
       where: { idUsuario: userId },
+      include: {
+        alumnos: {
+          include: {
+            alumno: true,
+          },
+        },
+      },
     });
-    return groups;
+
+    // Transformamos los datos para tener una estructura más limpia
+    return groups.map((group) => ({
+      ...group,
+      alumnos: group.alumnos.map((ga) => ga.alumno),
+    }));
   }
 }

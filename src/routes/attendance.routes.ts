@@ -21,6 +21,24 @@ const attendanceController = new AttendanceController();
 /**
  * @swagger
  * /api/attendance:
+ *   get:
+ *     summary: Obtiene todos los registros de asistencia.
+ *     tags: [Attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de registros de asistencia.
+ *       401:
+ *         description: No autorizado.
+ */
+router.get("/", authenticate, (req, res, next) => {
+  attendanceController.getAllAttendances(req, res, next);
+});
+
+/**
+ * @swagger
+ * /api/attendance:
  *   post:
  *     summary: Registra la asistencia de un alumno.
  *     tags: [Attendance]

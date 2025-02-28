@@ -27,6 +27,16 @@ export class AttendanceService {
     return attendance;
   }
 
+  // Obtiene todos los registros de asistencia
+  async getAllAttendances() {
+    const attendances = await prisma.asistencia.findMany({
+      include: {
+        alumno: true, // Incluir los datos del alumno relacionado
+      },
+    });
+    return attendances;
+  }
+
   // Actualiza un registro de asistencia por su ID
   async updateAttendance(attendanceId: number, data: UpdateAttendanceDto) {
     const attendance = await prisma.asistencia.update({
