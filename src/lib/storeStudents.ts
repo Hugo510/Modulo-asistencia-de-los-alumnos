@@ -8,7 +8,10 @@ interface StudentsState {
   error: string | null;
   fetchStudents: () => Promise<void>;
   getStudentById: (id: number) => Student | null;
-  addStudent: (data: Omit<Student, "id">) => Promise<Student | null>;
+  addStudent: (
+    groupId: number,
+    data: Omit<Student, "id">
+  ) => Promise<Student | null>;
   updateStudent: (
     id: number,
     data: Partial<Omit<Student, "id">>
@@ -39,10 +42,10 @@ export const useStudentsStore = create<StudentsState>((set, get) => ({
     return get().students.find((s) => s.id === id) || null;
   },
 
-  addStudent: async (data: Omit<Student, "id">) => {
+  addStudent: async (groupId: number, data: Omit<Student, "id">) => {
     try {
       set({ loading: true, error: null });
-      const newStudent = await studentService.createStudent(data);
+      const newStudent = await studentService.createStudent(groupId, data);
       set((state) => ({
         students: [...state.students, newStudent],
         loading: false,

@@ -19,6 +19,7 @@ export interface Group {
   id: number;
   nombre: string;
   idUsuario: number;
+  alumnos?: Student[]; // Agregamos la propiedad opcional de alumnos
 }
 
 export interface GroupStudent {

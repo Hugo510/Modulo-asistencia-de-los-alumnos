@@ -111,8 +111,19 @@ export const useStore = create<AppState>((set, get) => ({
 
       const groups = await groupService.getAllGroups();
 
+      // Procesar los estudiantes que vienen con cada grupo
+      const updatedStudents = { ...get().students };
+
+      // Para cada grupo que tiene alumnos, los guardamos en el estado students
+      groups.forEach((group) => {
+        if (group.alumnos && group.alumnos.length > 0) {
+          updatedStudents[group.id] = group.alumnos;
+        }
+      });
+
       set((state) => ({
         groups,
+        students: updatedStudents,
         loading: { ...state.loading, groups: false },
       }));
     } catch (error) {

@@ -59,9 +59,15 @@ export const studentService = {
     }
   },
 
-  createStudent: async (studentData: Omit<Student, "id">): Promise<Student> => {
+  createStudent: async (
+    groupId: number,
+    studentData: Omit<Student, "id">
+  ): Promise<Student> => {
     try {
-      const response = await api.post<Student>("/students", studentData);
+      const response = await api.post<Student>(
+        `/students/groups/${groupId}/students`,
+        studentData
+      );
       return response.data;
     } catch (error: any) {
       if (error.response?.status === 400) {

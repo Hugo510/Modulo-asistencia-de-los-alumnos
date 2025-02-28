@@ -11,7 +11,7 @@ export function GroupsPage() {
     nombre: ""
   });
 
-  const { groups, addGroup, getGroupStudents, fetchGroups } = useStore();
+  const { groups, addGroup, fetchGroups } = useStore();
 
   useEffect(() => {
     fetchGroups();
@@ -94,7 +94,8 @@ export function GroupsPage() {
           {filteredGroups.length > 0 ? (
             <ul className="divide-y divide-gray-200">
               {filteredGroups.map((group) => {
-                const students = getGroupStudents(group.id);
+                // Usa los alumnos directamente del grupo o obtén los estudiantes del store
+                const students = group.alumnos || [];
                 return (
                   <li key={group.id}>
                     <div className="flex items-center px-4 py-4 sm:px-6">

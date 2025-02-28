@@ -3,10 +3,12 @@ import { Search, Mail, MoreVertical, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStudentsStore } from "@/lib/storeStudents";
+import { useStore } from "@/lib/store"; // Para acceder a los grupos
 
 export function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | "">("");
   const [newStudent, setNewStudent] = useState({
     nombre: "",
     apellido: "",
@@ -14,10 +16,12 @@ export function StudentsPage() {
   });
 
   const { students, fetchStudents, addStudent } = useStudentsStore();
+  const { groups, fetchGroups } = useStore(); // Obtener grupos del store
 
   useEffect(() => {
     fetchStudents();
-  }, [fetchStudents]);
+    fetchGroups(); // Cargar la lista de grupos al montar el componente
+  }, [fetchStudents, fetchGroups]);
 
   const filteredStudents = students.filter(
     (student) =>
@@ -27,8 +31,15 @@ export function StudentsPage() {
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    await addStudent(newStudent);
+
+    if (selectedGroupId === "") {
+      // Podríamos mostrar un mensaje de error aquí
+      return;
+    }
+
+    await addStudent(selectedGroupId as number, newStudent);
     setNewStudent({ nombre: "", apellido: "", correo: "" });
+    setSelectedGroupId("");
     setShowAddForm(false);
   };
 
@@ -87,6 +98,28 @@ export function StudentsPage() {
                 required
               />
             </div>
+
+            {/* Nuevo campo: selector de grupo */}
+            <div>
+              <label htmlFor="groupId" className="block text-sm font-medium text-gray-700">
+                Grupo
+              </label>
+              <select
+                id="groupId"
+                value={selectedGroupId}
+                onChange={(e) => setSelectedGroupId(e.target.value ? parseInt(e.target.value) : "")}
+                required
+                className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm"
+              >
+                <option value="">Selecciona un grupo</option>
+                {groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setShowAddForm(false)}>
                 Cancelar
