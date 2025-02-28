@@ -30,15 +30,13 @@ export interface GroupStudent {
   status: "active" | "inactive";
 }
 
+// Actualizar la interfaz AttendanceRecord para reflejar el modelo real de la BD
 export interface AttendanceRecord {
-  id: string;
-  studentId: string;
-  groupId: number;
-  date: string;
-  status: "present" | "absent" | "late";
-  notes?: string;
-  recordedBy: string;
-  recordedAt: string;
+  id: number;
+  idAlumno: number;
+  fecha: string; // Manejaremos DateTime como string en formato ISO
+  estado: string; // "presente", "ausente", "tarde"
+  alumno?: Student; // Campo opcional que contiene los datos del alumno (solo en getAllAttendance)
 }
 
 export interface LoginCredentials {

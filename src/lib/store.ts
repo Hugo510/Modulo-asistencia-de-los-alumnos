@@ -103,6 +103,11 @@ export const useStore = create<AppState>((set, get) => ({
 
   // Acciones
   fetchGroups: async () => {
+    // Evitar llamadas innecesarias a la API si ya tenemos datos
+    if (get().groups.length > 0 && !get().loading.groups) {
+      return;
+    }
+
     try {
       set((state) => ({
         loading: { ...state.loading, groups: true },
