@@ -39,6 +39,22 @@ cp .env.example .env
 npx prisma migrate dev
 ```
 
+6. (Opcional) Cargar datos de muestra:
+
+```bash
+npm run seed
+```
+
+Esto creará automáticamente:
+
+- Usuario administrador (correo: admin@example.com, contraseña: password123)
+- Usuario profesor (correo: profesor@example.com, contraseña: password123)
+- Grupos de muestra
+- Alumnos de muestra
+- Registros de asistencia de ejemplo
+
+> **Recomendación para pruebas**: Para probar correctamente el proyecto, se recomienda iniciar sesión con el usuario profesor (correo: profesor@example.com, contraseña: password123), ya que este cuenta con grupos y alumnos preconfigurados listos para gestionar asistencias.
+
 ## Configuración
 
 Edita el archivo `.env` con los siguientes valores:

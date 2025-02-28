@@ -41,6 +41,67 @@ FRONTEND_URL=http://url-de-tu-frontend
 
 Reemplaza los valores con la configuración apropiada para tu entorno.
 
+## Configuración de la Base de Datos
+
+### Opción 1: Uso de migraciones automáticas (Recomendado)
+
+1. Asegúrate de que la base de datos especificada en `DATABASE_URL` existe:
+
+```sql
+CREATE DATABASE IF NOT EXISTS nombre_base_de_datos;
+```
+
+2. Instala Prisma CLI globalmente (si no lo tienes):
+
+```bash
+npm install -g prisma
+```
+
+3. Aplica las migraciones de la base de datos:
+
+```bash
+npx prisma migrate deploy
+```
+
+Este comando creará automáticamente todas las tablas necesarias basadas en el esquema de Prisma.
+
+4. Genera el cliente de Prisma:
+
+```bash
+npx prisma generate
+```
+
+5. (Opcional) Cargar datos de muestra para tener usuarios, grupos y registros preconfigurados:
+
+```bash
+npx ts-node prisma/seed.ts
+```
+
+Esto creará los siguientes datos de muestra:
+
+- Usuario administrador:
+  - Email: admin@example.com
+  - Contraseña: password123
+- Usuario profesor:
+  - Email: profesor@example.com
+  - Contraseña: password123
+- Grupos de ejemplo con alumnos asignados
+- Registros de asistencia de ejemplo
+
+> **Recomendación para pruebas**: Para probar correctamente el sistema y sus funcionalidades, se recomienda iniciar sesión con el usuario profesor (correo: profesor@example.com, contraseña: password123), ya que este usuario tiene grupos y alumnos preconfigurados, lo que permite una experiencia completa del sistema sin necesidad de crear datos adicionales.
+
+### Opción 2: Uso de SQL directo
+
+Si no puedes usar las migraciones de Prisma, puedes generar el SQL y ejecutarlo manualmente:
+
+1. Genera el SQL para crear las tablas:
+
+```bash
+npx prisma migrate deploy --create-only
+```
+
+2. Encontrarás los archivos SQL en la carpeta `prisma/migrations`. Ejecuta estos scripts en tu base de datos.
+
 ## Ejecución
 
 1. Para iniciar el servidor, ejecuta:
@@ -103,8 +164,14 @@ pm2 restart asistencia-backend
 
 - **Error de permisos**: En sistemas Unix/Linux, asegúrate de tener los permisos adecuados para ejecutar el servidor y acceder a los archivos requeridos.
 
+- **Error en migraciones de Prisma**: Si hay algún error al ejecutar `prisma migrate deploy`, intenta:
+  - Verificar que el usuario de la base de datos tiene permisos suficientes (CREATE, ALTER, DROP, etc.)
+  - Revisar si la base de datos ya tiene tablas con los mismos nombres
+  - Ejecutar `npx prisma migrate resolve --applied [nombre-de-la-migración]` si una migración quedó en estado incompleto
+
 ## Notas Importantes
 
 - Esta configuración es para un entorno de ejecución básico. Para un entorno de producción completo, considera usar un servidor web como Nginx o Apache como proxy inverso.
 - Asegúrate de utilizar valores seguros y únicos para `JWT_SECRET` y otras claves sensibles.
 - El archivo `.env` contiene información sensible. No lo compartas ni lo subas a repositorios públicos.
+- Para entornos de producción, ajusta la variable `NODE_ENV=production` en el archivo `.env`.
