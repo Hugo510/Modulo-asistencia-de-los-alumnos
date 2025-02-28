@@ -1,25 +1,62 @@
-# Proyecto de Aplicación Web
+# Sistema de Asistencia de Alumnos - Frontend
 
-Este es un proyecto de aplicación web desarrollado con React y TypeScript. Utiliza Tailwind CSS para el diseño y Vite como herramienta de construcción.
+## Ejecutando la aplicación desde la carpeta 'dist'
 
-## Requisitos Previos
+Este documento describe cómo ejecutar la versión compilada de la aplicación frontend utilizando la carpeta `dist` generada previamente.
 
-- Node.js (versión 14 o superior)
-- npm (versión 6 o superior) o yarn
+### Requisitos previos
 
-## Instalación
+- Node.js (versión 14.x o superior)
+- npm (generalmente viene instalado con Node.js)
 
-1. Clona el repositorio:
+### Instrucciones para ejecutar la aplicación
 
-git clone <https://github.com/Hugo510/Modulo-asistencia-de-los-alumnos>
+Sigue estos pasos para ejecutar la aplicación frontend:
 
-2.Navega haste el proyecto
-cd <NOMBRE_DEL_PROYECTO>
+1. **Descarga o clona el repositorio**
 
-3.Instala las dependencias.
-npm install o yarn install
+   Asegúrate de tener todo el código fuente descargado en tu computadora.
 
-FALTANTES POSIBLES:
---Funcion visual para eliminar, actualizar un grupo.
---Funcion visual para eliminar, actualizar un alumno.
+2. **Abre una terminal o línea de comandos**
 
+   Navega hasta la carpeta donde se encuentra el proyecto:
+
+   ```
+   cd ruta/a/Módulo asistencia de los alumnos/frontend
+   ```
+
+3. **Instala las dependencias del proyecto**
+
+   Ejecuta el siguiente comando para instalar todas las dependencias necesarias:
+
+   ```
+   npm install
+   ```
+
+4. **Ejecuta el servidor de vista previa**
+
+   Si ya tienes la carpeta `dist` generada, ejecuta:
+
+   ```
+   npm run preview
+   ```
+
+5. **Accede a la aplicación**
+
+   Una vez iniciado el servidor, verás un mensaje en la terminal con la URL donde se está ejecutando la aplicación, generalmente:
+
+   ```
+   ➜  Local:   http://localhost:4173/
+   ```
+
+   Abre tu navegador web y visita esa dirección para acceder a la aplicación.
+
+### Solución de problemas comunes
+
+- **La carpeta `dist` no existe**: Esto significa que la aplicación no ha sido compilada. Ejecuta primero `npm run build` para generarla.
+- **Error de conexión**: Verifica que el puerto especificado (por lo general 4173) no esté siendo utilizado por otra aplicación.
+- **Dependencias faltantes**: Si hay errores relacionados con módulos faltantes, asegúrate de haber ejecutado `npm install` correctamente.
+
+### Nota importante
+
+Esta es una versión de producción optimizada de la aplicación. Para desarrollo, se recomienda usar `npm run dev` en su lugar.

@@ -82,7 +82,7 @@ export const authService = {
   resetPassword: async (email: string): Promise<boolean> => {
     try {
       // Transformar el campo email a correo
-      await api.post("/auth/reset-password", { correo: email });
+      await api.post("/auth/recover", { correo: email });
       return true;
     } catch (error: any) {
       if (error.response) {
@@ -155,7 +155,7 @@ export const authService = {
     newPassword: string
   ): Promise<boolean> => {
     try {
-      await api.post("/auth/update-password", { token, newPassword });
+      await api.post("/auth/reset", { token, newPassword });
       return true;
     } catch (error: any) {
       if (error.response) {

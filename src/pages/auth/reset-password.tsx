@@ -67,7 +67,7 @@ export function ResetPasswordPage() {
       } else {
         setError("No se pudo procesar tu solicitud.");
       }
-    } catch (error) {
+    } catch {
       setError("Ocurrió un error. Por favor, inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
@@ -89,7 +89,7 @@ export function ResetPasswordPage() {
       } else {
         setError("No se pudo restablecer la contraseña.");
       }
-    } catch (error) {
+    } catch {
       setError("Ocurrió un error. Por favor, inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
