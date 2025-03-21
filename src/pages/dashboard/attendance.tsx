@@ -1,27 +1,46 @@
 import { useState, useEffect, useMemo, useCallback, memo } from "react";
-import { format, parseISO, isSameDay } from "date-fns";
-import { es } from "date-fns/locale";
-import { Calendar, Clock, Search } from "lucide-react";
+import { format, isValid } from "date-fns";
+import { Clock, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateFilter } from "@/components/date-filter";
 import { useStore } from "@/lib/store";
 import { useAttendanceStore } from "@/lib/storeAttendance";
-import type { AttendanceRecord } from "@/lib/types";
+import type { AttendanceRecord, Student } from "@/lib/types";
 
 // Componente memorizado para cada fila de asistencia
 const AttendanceRow = memo(
   ({
-    record,
+    student,
+    attendanceRecord,
     onStatusChange,
   }: {
-    record: AttendanceRecord;
-    onStatusChange: (idAlumno: number, estado: string) => void;
+    student: Student;
+    attendanceRecord?: AttendanceRecord;
+    onStatusChange: (idAlumno: number, estado: string, recordId?: number) => void;
   }) => {
-    const student = record.alumno;
-    if (!student) return null;
+    // Determinar si el estudiante ya tiene un registro de asistencia
+    const hasAttendance = !!attendanceRecord;
+    // Normalizar el estado actual para trabajar con valores estandarizados
+    const normalizeStatus = (status: string): string => {
+      const lowerStatus = status.toLowerCase();
+      if (lowerStatus.includes('tarde') || lowerStatus === 'tardanza') return 'tardanza';
+      if (lowerStatus === 'ausente' || lowerStatus === 'au') return 'ausente';
+      if (lowerStatus === 'presente') return 'presente';
+      return '';
+    };
+
+    // Obtener el estado actual normalizado o un valor vacío si no hay registro
+    const currentStatus = hasAttendance ? normalizeStatus(attendanceRecord.estado) : '';
+
+    // Función para manejar los clics en los botones de estado
+    const handleStatusClick = useCallback((estado: string) => {
+      if (currentStatus === estado) return; // No hacer nada si es el mismo estado
+      onStatusChange(student.id, estado, attendanceRecord?.id);
+    }, [student.id, currentStatus, attendanceRecord?.id, onStatusChange]);
 
     return (
-      <li key={record.id}>
+      <li>
         <div className="flex items-center px-4 py-4 sm:px-6">
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
@@ -36,24 +55,27 @@ const AttendanceRow = memo(
           <div className="ml-5 flex items-center space-x-2">
             <Button
               size="sm"
-              variant={record.estado === "presente" ? "secondary" : "outline"}
-              onClick={() => onStatusChange(record.idAlumno, "presente")}
+              variant={currentStatus === "presente" ? "secondary" : "outline"}
+              onClick={() => handleStatusClick("presente")}
+              disabled={currentStatus === "presente"}
               className="w-24"
             >
               Presente
             </Button>
             <Button
               size="sm"
-              variant={record.estado === "tarde" ? "ghost" : "outline"}
-              onClick={() => onStatusChange(record.idAlumno, "tarde")}
+              variant={currentStatus === "tardanza" ? "secondary" : "outline"}
+              onClick={() => handleStatusClick("tardanza")}
+              disabled={currentStatus === "tardanza"}
               className="w-24"
             >
               Tarde
             </Button>
             <Button
               size="sm"
-              variant={record.estado === "ausente" ? "ghost" : "outline"}
-              onClick={() => onStatusChange(record.idAlumno, "ausente")}
+              variant={currentStatus === "ausente" ? "secondary" : "outline"}
+              onClick={() => handleStatusClick("ausente")}
+              disabled={currentStatus === "ausente"}
               className="w-24"
             >
               Ausente
@@ -71,39 +93,43 @@ export function AttendancePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroupId, setSelectedGroupId] = useState<number | "">("");
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Memoizar la creación del objeto Date para evitar recrearlo en cada renderizado
-  const today = useMemo(() => new Date(), []);
-  const isoDate = useMemo(() => today.toISOString(), [today]);
-  const dateStr = useMemo(() => format(today, "yyyy-MM-dd"), [today]);
-  const formattedDate = useMemo(
-    () => format(today, "d 'de' MMMM, yyyy", { locale: es }),
-    [today]
-  );
-  const formattedTime = useMemo(() => format(today, "h:mm a"), [today]);
+  const isoDate = useMemo(() => selectedDate.toISOString(), [selectedDate]);
+  const dateStr = useMemo(() => format(selectedDate, "yyyy-MM-dd"), [selectedDate]);
+  const formattedTime = useMemo(() => format(selectedDate, "h:mm a"), [selectedDate]);
 
   // Memoizar selectores para evitar re-renders innecesarios
-  const { groups, fetchGroups } = useStore(
+  const { groups, fetchGroups, getGroupStudents } = useStore(
     useCallback(
       (state) => ({
         groups: state.groups,
         fetchGroups: state.fetchGroups,
+        getGroupStudents: state.getGroupStudents,
       }),
       []
     )
   );
 
-  const { attendanceRecords, registerAttendance, fetchAllAttendance } =
-    useAttendanceStore(
-      useCallback(
-        (state) => ({
-          attendanceRecords: state.attendanceRecords,
-          registerAttendance: state.registerAttendance,
-          fetchAllAttendance: state.fetchAllAttendance,
-        }),
-        []
-      )
-    );
+  const {
+    attendanceRecords,
+    registerAttendance,
+    updateAttendance,
+    fetchAllAttendance,
+    getAttendancesByDate
+  } = useAttendanceStore(
+    useCallback(
+      (state) => ({
+        attendanceRecords: state.attendanceRecords,
+        registerAttendance: state.registerAttendance,
+        updateAttendance: state.updateAttendance,
+        fetchAllAttendance: state.fetchAllAttendance,
+        getAttendancesByDate: state.getAttendancesByDate,
+      }),
+      []
+    )
+  );
 
   // Cargar datos solo una vez
   useEffect(() => {
@@ -117,65 +143,89 @@ export function AttendancePage() {
     }
   }, [fetchGroups, fetchAllAttendance, dataLoaded]);
 
-  // Memoizar la función handleAttendanceChange
+  // Manejar cambios de fecha
+  const handleDateChange = useCallback((newDate: Date) => {
+    if (isValid(newDate)) {
+      setSelectedDate(newDate);
+    }
+  }, []);
+
+  // Función para manejar los cambios de estado de asistencia
   const handleAttendanceChange = useCallback(
-    async (idAlumno: number, estado: string) => {
-      await registerAttendance({
-        idAlumno,
-        fecha: isoDate,
-        estado,
-      });
+    async (idAlumno: number, estado: string, recordId?: number) => {
+      if (recordId) {
+        // Si ya existe un registro, actualizar (PUT)
+        await updateAttendance(recordId, {
+          idAlumno,
+          fecha: isoDate, // Usa la fecha seleccionada
+          estado,
+        });
+      } else {
+        // Si no existe un registro, crear uno nuevo (POST)
+        await registerAttendance({
+          idAlumno,
+          fecha: isoDate, // Usa la fecha seleccionada
+          estado,
+        });
+      }
     },
-    [registerAttendance, isoDate]
+    [registerAttendance, updateAttendance, isoDate]
   );
 
-  // Memoizar los resultados filtrados para evitar recálculos innecesarios
-  const filteredAttendanceRecords = useMemo(() => {
-    if (attendanceRecords.length === 0) {
-      return [];
-    }
+  // Obtener todos los estudiantes según filtros aplicados
+  const filteredStudents = useMemo(() => {
+    let students: Student[] = [];
 
-    // Crear objeto Date una sola vez para comparar
-    const todayDate = parseISO(dateStr);
-
-    // Filtrar por fecha usando date-fns
-    const todayAttendances = attendanceRecords.filter((record) => {
-      if (!record.fecha) return false;
-      try {
-        // Usar parseISO para convertir la fecha a objeto Date y isSameDay para comparar
-        const recordDate = parseISO(record.fecha);
-        return isSameDay(recordDate, todayDate);
-      } catch (error) {
-        console.error("Error al procesar fecha:", error);
-        return false;
-      }
-    });
-
-    // Filtrar por grupo
-    let result = todayAttendances;
+    // Si hay un grupo seleccionado, obtener estudiantes de ese grupo
     if (selectedGroupId !== "") {
-      const selectedGroup = groups.find((g) => g.id === selectedGroupId);
-      const groupStudentIds =
-        selectedGroup?.alumnos?.map((student) => student.id) || [];
+      students = getGroupStudents(selectedGroupId as number);
+    } else {
+      // Si no hay grupo seleccionado, obtener estudiantes de todos los grupos
+      // usando un Map para eliminar duplicados
+      const uniqueStudentsMap = new Map<number, Student>();
 
-      result = todayAttendances.filter((record) =>
-        groupStudentIds.includes(record.idAlumno)
-      );
+      groups.forEach(group => {
+        if (group.alumnos) {
+          group.alumnos.forEach(student => {
+            uniqueStudentsMap.set(student.id, student);
+          });
+        }
+      });
+
+      // Convertir el Map a un array
+      students = Array.from(uniqueStudentsMap.values());
     }
 
-    // Filtrar por término de búsqueda
+    // Filtrar por término de búsqueda si existe
     if (searchTerm.trim() !== "") {
-      result = result.filter((record) => {
-        if (!record.alumno) return false;
-
-        const fullName =
-          `${record.alumno.nombre} ${record.alumno.apellido}`.toLowerCase();
+      students = students.filter((student) => {
+        const fullName = `${student.nombre} ${student.apellido}`.toLowerCase();
         return fullName.includes(searchTerm.toLowerCase());
       });
     }
 
-    return result;
-  }, [attendanceRecords, dateStr, selectedGroupId, groups, searchTerm]);
+    return students;
+  }, [groups, selectedGroupId, searchTerm, getGroupStudents]);
+
+  // Obtener los registros de asistencia para la fecha seleccionada
+  const selectedDateAttendanceRecords = useMemo(() => {
+    return getAttendancesByDate(dateStr);
+  }, [getAttendancesByDate, dateStr, attendanceRecords]);
+
+  // Combinar estudiantes con sus registros de asistencia correspondientes
+  const studentsWithAttendance = useMemo(() => {
+    return filteredStudents.map(student => {
+      // Buscar si el estudiante tiene un registro de asistencia para la fecha seleccionada
+      const attendanceRecord = selectedDateAttendanceRecords.find(
+        record => record.idAlumno === student.id
+      );
+
+      return {
+        student,
+        attendanceRecord
+      };
+    });
+  }, [filteredStudents, selectedDateAttendanceRecords]);
 
   // Memoizar los selectores de grupos para evitar recrearlos en cada render
   const groupOptions = useMemo(() => {
@@ -192,16 +242,10 @@ export function AttendancePage() {
         <div className="sm:flex-auto">
           <h1 className="text-2xl font-semibold text-gray-900">Asistencia</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Registra la asistencia de los estudiantes para la clase de hoy
+            Registra la asistencia de los estudiantes
           </p>
         </div>
         <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5 text-gray-500" />
-            <span className="text-sm font-medium text-gray-900">
-              {formattedDate}
-            </span>
-          </div>
           <div className="flex items-center space-x-2 mt-1">
             <Clock className="h-5 w-5 text-gray-500" />
             <span className="text-sm text-gray-500">{formattedTime}</span>
@@ -210,7 +254,13 @@ export function AttendancePage() {
       </div>
 
       <div className="mt-6">
-        <div className="flex items-center mb-4 space-x-4">
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
+          {/* Filtro de fechas */}
+          <DateFilter
+            selectedDate={selectedDate}
+            onDateChange={handleDateChange}
+          />
+
           <div className="w-64">
             <label
               htmlFor="group"
@@ -232,6 +282,7 @@ export function AttendancePage() {
               {groupOptions}
             </select>
           </div>
+
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <Input
@@ -249,20 +300,20 @@ export function AttendancePage() {
             <div className="p-4 text-center text-gray-500">
               Cargando datos de asistencia...
             </div>
-          ) : filteredAttendanceRecords.length > 0 ? (
+          ) : filteredStudents.length > 0 ? (
             <ul className="divide-y divide-gray-200">
-              {filteredAttendanceRecords.map((record) => (
+              {studentsWithAttendance.map(({ student, attendanceRecord }) => (
                 <AttendanceRow
-                  key={record.id}
-                  record={record}
+                  key={`student-${student.id}`}
+                  student={student}
+                  attendanceRecord={attendanceRecord}
                   onStatusChange={handleAttendanceChange}
                 />
               ))}
             </ul>
           ) : (
             <div className="p-4 text-center text-gray-500">
-              No hay registros de asistencia para mostrar. Selecciona un grupo o
-              ajusta tu búsqueda.
+              No hay estudiantes para mostrar. Selecciona un grupo o ajusta tu búsqueda.
             </div>
           )}
         </div>
