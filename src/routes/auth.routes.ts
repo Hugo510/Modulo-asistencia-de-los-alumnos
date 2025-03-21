@@ -4,6 +4,7 @@ import { AuthController } from "../controllers/auth.controller";
 import { validate } from "../middlewares/validate.middleware";
 import {
   LoginDtoSchema,
+  RegisterDtoSchema,
   PasswordRecoveryDtoSchema,
   ResetPasswordDtoSchema,
 } from "../dtos/auth.dto";
@@ -60,6 +61,15 @@ router.post(
     authController.login(req, res, next);
   }
 );
+// ruta para registrar un nueo usuario
+/**
+ * @swagger
+ * /api/auth/register:
+ * description: Registrar un nuevo usuari
+ */
+router.post("/register", validate(RegisterDtoSchema), (req, res, next) => {
+  authController.register(req, res, next);
+});
 
 /**
  * @swagger

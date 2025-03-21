@@ -24,6 +24,7 @@ app.use(helmet());
 // Permitir peticiones desde otros orígenes (CORS)
 app.use(cors());
 
+
 // Analiza los cuerpos de las peticiones en formato JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -1,9 +1,9 @@
 // src/routes/group.routes.ts
-import { Router } from 'express';
-import { GroupController } from '../controllers/group.controller';
-import { validate } from '../middlewares/validate.middleware';
-import { CreateGroupDtoSchema, UpdateGroupDtoSchema } from '../dtos/group.dto';
-import { authenticate } from '../middlewares/auth.middleware';
+import { Router } from "express";
+import { GroupController } from "../controllers/group.controller";
+import { validate } from "../middlewares/validate.middleware";
+import { CreateGroupDtoSchema, UpdateGroupDtoSchema } from "../dtos/group.dto";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 const groupController = new GroupController();
@@ -38,9 +38,14 @@ const groupController = new GroupController();
  *       401:
  *         description: No autorizado.
  */
-router.post('/', authenticate, validate(CreateGroupDtoSchema), (req, res, next) => {
-  groupController.createGroup(req, res, next);
-});
+router.post(
+  "/",
+  authenticate,
+  validate(CreateGroupDtoSchema),
+  (req, res, next) => {
+    groupController.createGroup(req, res, next);
+  }
+);
 
 /**
  * @swagger
@@ -72,9 +77,14 @@ router.post('/', authenticate, validate(CreateGroupDtoSchema), (req, res, next) 
  *       401:
  *         description: No autorizado.
  */
-router.put('/:id', authenticate, validate(UpdateGroupDtoSchema), (req, res, next) => {
-  groupController.updateGroup(req, res, next);
-});
+router.put(
+  "/:id",
+  authenticate,
+  validate(UpdateGroupDtoSchema),
+  (req, res, next) => {
+    groupController.updateGroup(req, res, next);
+  }
+);
 
 /**
  * @swagger
@@ -90,7 +100,7 @@ router.put('/:id', authenticate, validate(UpdateGroupDtoSchema), (req, res, next
  *       401:
  *         description: No autorizado.
  */
-router.get('/', authenticate, (req, res, next) => {
+router.get("/", authenticate, (req, res, next) => {
   groupController.getGroups(req, res, next);
 });
 

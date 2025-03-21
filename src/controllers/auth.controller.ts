@@ -5,6 +5,7 @@ import {
   LoginDto,
   PasswordRecoveryDto,
   ResetPasswordDto,
+  RegisterDto
 } from "../dtos/auth.dto";
 
 const authService = new AuthService();
@@ -19,7 +20,19 @@ export class AuthController {
       next(error);
     }
   }
-
+  async register(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const data: RegisterDto = req.body;
+      const result = await authService.register(data);
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
   async recoverPassword(
     req: Request,
     res: Response,
