@@ -2,7 +2,7 @@ import axios from "axios";
 import { useAuth } from "./auth";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://tu-api.com",
+  baseURL: import.meta.env.VITE_API_URL || "tu_api_url",
   timeout: 5000,
   headers: {
     "Content-Type": "application/json",

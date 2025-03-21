@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { LoginPage } from "@/pages/auth/login";
+import { RegisterPage } from "@/pages/auth/register";
 import { ResetPasswordPage } from "@/pages/auth/reset-password";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { GroupsPage } from "@/pages/dashboard/groups";
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: "/reset-password",
     element: <ResetPasswordPage />,
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />,
   },
   {
     path: "/dashboard",

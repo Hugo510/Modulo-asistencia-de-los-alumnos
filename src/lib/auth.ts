@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User, LoginCredentials } from "./types";
+import type { User, LoginCredentials, RegisterCredentials } from "./types";
 import { authService, AuthError } from "./services/authService";
 
 // Define los tipos para los estados de carga y errores
 interface LoadingState {
   login: boolean;
+  register: boolean;
   resetPassword: boolean;
   verifyToken: boolean;
   updatePassword: boolean;
@@ -13,6 +14,7 @@ interface LoadingState {
 
 interface ErrorState {
   login: string | null;
+  register: string | null;
   resetPassword: string | null;
   verifyToken: string | null;
   updatePassword: string | null;
@@ -27,6 +29,7 @@ interface AuthState {
   error: ErrorState;
   // Métodos
   login: (credentials: LoginCredentials) => Promise<boolean>;
+  register: (credentials: RegisterCredentials) => Promise<boolean>;
   logout: () => void;
   resetPassword: (email: string) => Promise<boolean>;
   verifyResetToken: (token: string) => Promise<boolean>;
@@ -39,6 +42,7 @@ interface AuthState {
 // Estado inicial para loading y error
 const initialLoadingState: LoadingState = {
   login: false,
+  register: false,
   resetPassword: false,
   verifyToken: false,
   updatePassword: false,
@@ -46,6 +50,7 @@ const initialLoadingState: LoadingState = {
 
 const initialErrorState: ErrorState = {
   login: null,
+  register: null,
   resetPassword: null,
   verifyToken: null,
   updatePassword: null,
@@ -133,6 +138,52 @@ export const useAuth = create<AuthState>()(
         }
       },
 
+      register: async (credentials: RegisterCredentials) => {
+        try {
+          set((state) => ({
+            loading: { ...state.loading, register: true },
+            error: { ...state.error, register: null },
+          }));
+
+          const { user, token } = await authService.register(credentials);
+
+          set({
+            user,
+            token,
+            isAuthenticated: true,
+            loading: { ...get().loading, register: false },
+          });
+          return true;
+        } catch (error) {
+          let errorMessage = "Error desconocido durante el registro";
+
+          if (error instanceof AuthError) {
+            switch (error.code) {
+              case "EMAIL_ALREADY_EXISTS":
+                errorMessage = "El correo electrónico ya está registrado.";
+                break;
+              case "NETWORK_ERROR":
+                errorMessage =
+                  "No se pudo conectar al servidor. Verifica tu conexión a internet.";
+                break;
+              default:
+                errorMessage = error.message || "Error de registro";
+                break;
+            }
+          } else if (error instanceof Error) {
+            errorMessage = error.message;
+          }
+
+          set((state) => ({
+            loading: { ...state.loading, register: false },
+            error: { ...state.error, register: errorMessage },
+          }));
+
+          console.error("Register error:", error);
+          return false;
+        }
+      },
+
       logout: () => {
         set({
           user: null,
@@ -205,6 +256,7 @@ export const useAuth = create<AuthState>()(
             error: { ...state.error, verifyToken: errorMessage },
           }));
 
+          console.error("Verify token error:", error);
           return false;
         }
       },
@@ -238,6 +290,7 @@ export const useAuth = create<AuthState>()(
             error: { ...state.error, updatePassword: errorMessage },
           }));
 
+          console.error("Update password error:", error);
           return false;
         }
       },

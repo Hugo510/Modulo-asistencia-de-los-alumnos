@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/lib/auth";
 
 // Esquema para solicitar restablecimiento (ingresar correo)
@@ -43,16 +44,22 @@ export function ResetPasswordPage() {
   const { resetPassword, updatePassword } = useAuth();
 
   // Form para solicitar restablecimiento (ingresar correo)
-  const { register: registerRequest, handleSubmit: handleSubmitRequest } =
-    useForm<RequestResetForm>({
-      resolver: zodResolver(requestResetSchema),
-    });
+  const {
+    register: registerRequest,
+    handleSubmit: handleSubmitRequest,
+    formState: { errors: requestErrors },
+  } = useForm<RequestResetForm>({
+    resolver: zodResolver(requestResetSchema),
+  });
 
   // Form para reiniciar contraseña (ingresar nueva contraseña y confirmación)
-  const { register: registerReset, handleSubmit: handleSubmitReset } =
-    useForm<ResetPasswordForm>({
-      resolver: zodResolver(resetPasswordSchema),
-    });
+  const {
+    register: registerReset,
+    handleSubmit: handleSubmitReset,
+    formState: { errors: resetErrors },
+  } = useForm<ResetPasswordForm>({
+    resolver: zodResolver(resetPasswordSchema),
+  });
 
   // Función que se llama al solicitar restablecimiento de contraseña (envía el correo)
   const onRequestReset = async (data: RequestResetForm) => {
@@ -133,18 +140,13 @@ export function ResetPasswordPage() {
                 >
                   Nueva contraseña
                 </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <Input
-                    id="password"
-                    type="password"
-                    className="pl-10"
-                    placeholder="Introduce la nueva contraseña"
-                    {...registerReset("password")}
-                  />
-                </div>
+                <PasswordInput
+                  id="password"
+                  placeholder="Introduce la nueva contraseña"
+                  register={registerReset}
+                  error={resetErrors.password?.message}
+                  required
+                />
               </div>
 
               <div>
@@ -154,18 +156,13 @@ export function ResetPasswordPage() {
                 >
                   Confirmar contraseña
                 </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    className="pl-10"
-                    placeholder="Confirma la nueva contraseña"
-                    {...registerReset("confirmPassword")}
-                  />
-                </div>
+                <PasswordInput
+                  id="confirmPassword"
+                  placeholder="Confirma la nueva contraseña"
+                  register={registerReset}
+                  error={resetErrors.confirmPassword?.message}
+                  required
+                />
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
@@ -222,16 +219,3 @@ export function ResetPasswordPage() {
     </div>
   );
 }
-
-
-/* 
-  Explicación
-    Extracción del Token:
-      Se utiliza useSearchParams para extraer el parámetro token de la URL. Si existe, se muestra el formulario para reiniciar la contraseña; de lo contrario, se muestra el formulario para solicitar el restablecimiento.
-
-    Formulario para Reinicio de Contraseña:
-      Al enviar el formulario, se llama a onResetPassword, que ahora omite la validación del token (ya que no se implementa verifyResetToken) y procede directamente a llamar a updatePassword con el token y la nueva contraseña.
-
-    Interfaz de Usuario:
-      Los mensajes de error, éxito y la animación de carga se manejan con estados locales para ofrecer retroalimentación al usuario.
-*/
