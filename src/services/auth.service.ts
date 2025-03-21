@@ -11,6 +11,19 @@ import {
 } from "../dtos/auth.dto";
 
 export class AuthService {
+  async register(data: {nombre: string; correo: string; password: string; rol: string}){
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const user = await prisma.usuario.create({
+      data: {
+        nombre: data.nombre,
+        correo: data.correo,
+        password: hashedPassword,
+        rol: data.rol,
+      },
+    });
+    const token = jwt.sign ({ id:user.id, correo: user.correo, rol: user.rol}, env.JWT_SECRET, {expiresIn: "1h"});
+    return {user, token};
+  }
   async login(data: LoginDto) {
     const { correo, password } = data;
     const user = await prisma.usuario.findUnique({ where: { correo } });
