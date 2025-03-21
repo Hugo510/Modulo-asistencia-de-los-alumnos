@@ -16,6 +16,33 @@ export class AuthError extends Error {
 
 export const authService = {
   /**
+   * Registrar un nuevo usuario
+   */
+  register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+    try {
+      const response = await api.post<AuthResponse>(
+        "/auth/register",
+        credentials
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        const { status, data } = error.response;
+        throw new AuthError(
+          data?.message || "Error al registrar usuario",
+          status,
+          data?.code
+        );
+      } else {
+        throw new AuthError(
+          "No se pudo registrar el usuario",
+          undefined,
+          "NETWORK_ERROR"
+        );
+      }
+    }
+  },
+  /**
    * Iniciar sesión con credenciales
    */
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {

@@ -7,6 +7,7 @@ import { Lock, Mail } from "lucide-react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useAuth } from "@/lib/auth";
 
 const loginSchema = z.object({
@@ -72,7 +73,9 @@ export function LoginPage() {
     } catch (err) {
       console.error("Error inesperado:", err);
       setLocalError(
-        err instanceof Error ? err.message : "Error inesperado al iniciar sesión"
+        err instanceof Error
+          ? err.message
+          : "Error inesperado al iniciar sesión"
       );
     }
   };
@@ -136,18 +139,12 @@ export function LoginPage() {
               >
                 Contraseña
               </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  className="pl-10"
-                  placeholder="Introduce tu contraseña"
-                  {...register("password")}
-                />
-              </div>
+              <PasswordInput
+                id="password"
+                placeholder="Introduce tu contraseña"
+                register={register}
+                error={errors.password?.message}
+              />
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">
                   {errors.password.message}
@@ -156,7 +153,7 @@ export function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              {/* <div className="flex items-center">
                 <input
                   id="remember-me"
                   name="remember-me"
@@ -169,7 +166,7 @@ export function LoginPage() {
                 >
                   Recuérdame
                 </label>
-              </div>
+              </div> */}
 
               <div className="text-sm">
                 <a
@@ -188,7 +185,7 @@ export function LoginPage() {
             {/* Renderiza el widget reCAPTCHA */}
             <div className="flex justify-center">
               <ReCAPTCHA
-                sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"  // Clave de prueba
+                sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // Clave de prueba
                 onChange={onCaptchaChange}
               />
             </div>
@@ -197,6 +194,22 @@ export function LoginPage() {
               {loading.login ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
           </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              ¿No tienes una cuenta?{" "}
+              <a
+                href="#"
+                className="font-medium text-blue-600 hover:text-blue-500"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/register");
+                }}
+              >
+                Regístrate
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>
